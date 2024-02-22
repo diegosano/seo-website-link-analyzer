@@ -1,7 +1,7 @@
 import { URL } from 'node:url';
 import { JSDOM } from 'jsdom';
 
-import { areURLsInSameDomain } from './utils';
+import { areURLsInSameDomain } from '@/utils/are-urls-in-same-domain';
 
 /**
  * Normalize URL.

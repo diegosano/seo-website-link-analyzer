@@ -2,6 +2,8 @@ import { argv } from 'bun';
 import { parseArgs } from 'util';
 
 import { crawlPage } from './crawl';
+import { logger } from './utils/logger';
+import { printReport } from './report';
 
 async function main() {
   const { positionals } = parseArgs({
@@ -13,12 +15,12 @@ async function main() {
   const args = positionals.slice(2);
 
   if (args.length === 0) {
-    console.error('No entry URL provided');
+    logger.error('No entry URL provided');
     process.exit(1);
   }
 
   if (args.length > 1) {
-    console.error(
+    logger.error(
       'Incorrect number of arguments, you should pass only the entry URL'
     );
     process.exit(1);
@@ -26,10 +28,20 @@ async function main() {
 
   const [baseURL] = args;
 
-  console.info(`Starting to crawl URL: ${baseURL} ...`);
+  logger.info(`Starting to crawl URL: ${baseURL} ...`);
 
   const pages = await crawlPage(baseURL, baseURL, {});
-  console.log(pages);
+  printReport(pages);
+  process.exit(0);
 }
 
-main();
+main().catch((err) => {
+  logger.error('Aborting...');
+  if (err instanceof Error) {
+    logger.error(err);
+  } else {
+    logger.error('An unknown error has occurred:');
+    console.log(err);
+  }
+  process.exit(1);
+});

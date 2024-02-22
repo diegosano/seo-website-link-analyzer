@@ -2,6 +2,7 @@ import { URL } from 'node:url';
 import { JSDOM } from 'jsdom';
 
 import { areURLsInSameDomain } from '@/utils/are-urls-in-same-domain';
+import { logger } from '@/utils/logger';
 
 /**
  * Normalize URL.
@@ -36,26 +37,26 @@ export function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
   return absoluteURLs;
 }
 
-interface Pages {
+export interface PagesCount {
   [key: string]: number;
 }
 
 export async function crawlPage(
   baseURL: string,
   currentURL: string,
-  pages: Pages
+  pages: PagesCount
 ) {
   const isSameDomain = areURLsInSameDomain(baseURL, currentURL);
 
   if (!isSameDomain) {
-    console.log(`Skipping ${currentURL}, is not in the same domain`);
+    logger.info(`Skipping ${currentURL}, is not in the same domain`);
     return pages;
   }
 
   const normalizedCurrentURL = normalizeURL(currentURL);
   if (Object.hasOwn(pages, normalizedCurrentURL)) {
     pages[normalizedCurrentURL]++;
-    console.log(
+    logger.info(
       `Already visited ${currentURL}, setting count to ${pages[normalizedCurrentURL]}`
     );
     return pages;
@@ -63,13 +64,13 @@ export async function crawlPage(
 
   pages[normalizedCurrentURL] = baseURL === normalizedCurrentURL ? 0 : 1;
 
-  console.log(`Crawling ${currentURL} ...`);
+  logger.info(`Crawling ${currentURL} ...`);
 
   try {
     const response = await fetch(currentURL);
 
     if (!response.ok) {
-      console.error(
+      logger.error(
         `Error trying to fetch URL ${currentURL}, HTTP status code: ${response.status}: ${response.statusText}`
       );
       return pages;
@@ -77,7 +78,7 @@ export async function crawlPage(
 
     const contentType = response.headers.get('Content-Type');
     if (!contentType || !contentType.includes('text/html')) {
-      console.error(
+      logger.error(
         `Content-Type of response is "${contentType}", expecting "text/html"`
       );
       return pages;
@@ -93,9 +94,9 @@ export async function crawlPage(
     return pages;
   } catch (error) {
     if (error instanceof Error) {
-      console.error(error.message);
+      logger.error(error.message);
     } else {
-      console.error(error);
+      logger.error(error);
     }
     return pages;
   }

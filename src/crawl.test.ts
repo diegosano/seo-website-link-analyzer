@@ -1,4 +1,5 @@
 import { expect, describe, it } from 'bun:test';
+
 import { normalizeURL, getURLsFromHTML } from './crawl';
 
 describe('normalizeURL', () => {

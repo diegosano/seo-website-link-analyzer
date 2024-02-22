@@ -1,7 +1,9 @@
 import { argv } from 'bun';
 import { parseArgs } from 'util';
 
-function main() {
+import { crawlPage } from './crawl';
+
+async function main() {
   const { positionals } = parseArgs({
     args: argv,
     strict: true,
@@ -23,7 +25,11 @@ function main() {
   }
 
   const [baseURL] = args;
+
   console.info(`Starting to crawl URL: ${baseURL} ...`);
+
+  const pages = await crawlPage(baseURL, baseURL, {});
+  console.log(pages);
 }
 
 main();
